@@ -1,5 +1,6 @@
 package fr.manitra.fileupload;
 
+import fr.manitra.fileupload.health.TemplateHealthCheck;
 import fr.manitra.fileupload.resources.FileUploadResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
@@ -26,6 +27,10 @@ public class FileUploadApplication extends Application<FileUploadConfiguration> 
                     final Environment environment) {
     	
     	final FileUploadResource resource = new FileUploadResource(configuration.getTemplate(), configuration.getDefaultName());
+    	environment.jersey().register(resource);
+    	
+    	final TemplateHealthCheck healthCheck = new TemplateHealthCheck(configuration.getTemplate());
+    	environment.healthChecks().register("template", healthCheck);
     	environment.jersey().register(resource);
     }
 
