@@ -6,6 +6,15 @@ public class FileInfo {
 	private String mimeType;
 	private String path;
 	
+	public FileInfo() {
+	}
+	
+	public FileInfo(String fileName, String path, String mimeType) {
+		this.fileName = fileName;
+		this.mimeType = mimeType;
+		this.path = path;
+	}
+
 	public String getFileName() {
 		return fileName;
 	}
@@ -28,5 +37,9 @@ public class FileInfo {
 	
 	public void setPath(String path) {
 		this.path = path;
+	}
+	
+	public FileInfo withFileName(String fileName) {
+		return fileName != null && fileName.equals(getFileName()) ? this : new FileInfo(fileName, getPath(), getMimeType());
 	}
 }
