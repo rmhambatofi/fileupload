@@ -1,10 +1,13 @@
 package fr.manitra.fileupload;
 
+import java.util.Map;
+
 import fr.manitra.fileupload.health.TemplateHealthCheck;
 import fr.manitra.fileupload.resources.FileUploadResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
+import io.dropwizard.views.ViewBundle;
 
 public class FileUploadApplication extends Application<FileUploadConfiguration> {
 
@@ -19,7 +22,12 @@ public class FileUploadApplication extends Application<FileUploadConfiguration> 
 
     @Override
     public void initialize(final Bootstrap<FileUploadConfiguration> bootstrap) {
-        // TODO: application initialization
+    	bootstrap.addBundle(new ViewBundle<FileUploadConfiguration>() {
+            @Override
+            public Map<String, Map<String, String>> getViewConfiguration(FileUploadConfiguration configuration) {
+                return configuration.getViewRendererConfiguration();
+            }
+        });
     }
 
     @Override
