@@ -9,9 +9,8 @@ logging:
 
   # Logger-specific levels.
   loggers:
-
-    # Sets the level for 'com.example.app' to DEBUG.
-    com.example.app: DEBUG
+     
+    fr.manitra.fileupload: DEBUG
 
     # Redirects SQL logs to a separate file
     org.hibernate.SQL:

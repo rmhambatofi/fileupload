@@ -1,7 +1,11 @@
-<#-- @ftlvariable name="" type="fr.manitra.fileupload.views." -->
+<#-- @ftlvariable name="" type="fr.manitra.fileupload.views.FilesView" -->
 <html>
-    <body>
-        <!-- calls getPerson().getName() and sanitizes it -->
-        <h1>Upload & Download files tool, ${person.name?html}!</h1>
+    <body>        
+        <h1>Upload & Download files tool</h1>
+        <ul>
+	        <#list fileInfos as fileInfo>
+	        	 <li>${fileInfo.fileName}</li>
+	        </#list>
+        </ul>
     </body>
 </html>

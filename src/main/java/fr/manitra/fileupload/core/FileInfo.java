@@ -42,4 +42,12 @@ public class FileInfo {
 	public FileInfo withFileName(String fileName) {
 		return fileName != null && fileName.equals(getFileName()) ? this : new FileInfo(fileName, getPath(), getMimeType());
 	}
+	
+	public FileInfo withPath(String path) {
+		return path != null && path.equals(getPath()) ? this : new FileInfo(getFileName(), path, getMimeType());
+	}
+	
+	public FileInfo withMimeType(String mimeType) {
+		return mimeType != null && mimeType.equals(getMimeType()) ? this : new FileInfo(getFileName(), getPath(), mimeType);
+	}
 }
