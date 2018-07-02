@@ -1,5 +1,4 @@
-template: Hello, %s!
-defaultName: Stranger
+backupPath: /Users/manitra/backup
 
 # Logging settings.
 logging:

@@ -10,9 +10,8 @@ import org.glassfish.jersey.spi.ExtendedExceptionMapper;
 import com.github.mustachejava.MustacheNotFoundException;
 import com.google.common.base.Throwables;
 
-import fr.manitra.fileupload.health.TemplateHealthCheck;
+import fr.manitra.fileupload.health.FileuploadHealthCheck;
 import fr.manitra.fileupload.resources.FileResource;
-import fr.manitra.fileupload.resources.FileUploadResource;
 import io.dropwizard.Application;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -42,15 +41,11 @@ public class FileUploadApplication extends Application<FileUploadConfiguration> 
     @Override
     public void run(final FileUploadConfiguration configuration, final Environment environment) {
     	
-    	final FileUploadResource resource = new FileUploadResource(configuration.getTemplate(), configuration.getDefaultName());
-    	environment.jersey().register(resource);
-    	
-    	final FileResource fileResource = new FileResource();
+    	final FileResource fileResource = new FileResource(configuration.getBackupPath());
     	environment.jersey().register(fileResource);
     	
-    	final TemplateHealthCheck healthCheck = new TemplateHealthCheck(configuration.getTemplate());
+    	final FileuploadHealthCheck healthCheck = new FileuploadHealthCheck(configuration.getBackupPath());
     	environment.healthChecks().register("template", healthCheck);
-    	environment.jersey().register(resource);
     	
     	environment.jersey().register(new ExtendedExceptionMapper<WebApplicationException>() {
     	    @Override

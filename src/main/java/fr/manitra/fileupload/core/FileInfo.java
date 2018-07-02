@@ -1,18 +1,22 @@
 package fr.manitra.fileupload.core;
 
+import java.util.Date;
+
 public class FileInfo {
 	
 	private String fileName;
 	private String mimeType;
 	private String path;
+	private Long size;
+	private Date uploadDate;
 	
 	public FileInfo() {
 	}
 	
-	public FileInfo(String fileName, String path, String mimeType) {
+	public FileInfo(String fileName, Long size, Date uploadDate) {
 		this.fileName = fileName;
-		this.mimeType = mimeType;
-		this.path = path;
+		this.size = size;
+		this.uploadDate = uploadDate;
 	}
 
 	public String getFileName() {
@@ -39,15 +43,44 @@ public class FileInfo {
 		this.path = path;
 	}
 	
+	public Long getSize() {
+		return size;
+	}
+
+	public void setSize(Long size) {
+		this.size = size;
+	}
+
+	public Date getUploadDate() {
+		return uploadDate;
+	}
+
+	public void setUploadDate(Date uploadDate) {
+		this.uploadDate = uploadDate;
+	}
+
 	public FileInfo withFileName(String fileName) {
-		return fileName != null && fileName.equals(getFileName()) ? this : new FileInfo(fileName, getPath(), getMimeType());
+		this.setFileName(fileName);
+		return this;
 	}
 	
 	public FileInfo withPath(String path) {
-		return path != null && path.equals(getPath()) ? this : new FileInfo(getFileName(), path, getMimeType());
+		this.setPath(path);
+		return this;
 	}
 	
 	public FileInfo withMimeType(String mimeType) {
-		return mimeType != null && mimeType.equals(getMimeType()) ? this : new FileInfo(getFileName(), getPath(), mimeType);
+		this.setMimeType(mimeType);
+		return this;
+	}
+	
+	public FileInfo withSize(Long size) {
+		this.setSize(size);
+		return this;
+	}
+	
+	public FileInfo withUploadDate(Date uploadDate) {
+		this.setUploadDate(uploadDate);
+		return this;
 	}
 }
