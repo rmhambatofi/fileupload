@@ -13,6 +13,7 @@ import com.google.common.base.Throwables;
 import fr.manitra.fileupload.health.FileuploadHealthCheck;
 import fr.manitra.fileupload.resources.FileResource;
 import io.dropwizard.Application;
+import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
@@ -30,6 +31,7 @@ public class FileUploadApplication extends Application<FileUploadConfiguration> 
 
     @Override
     public void initialize(final Bootstrap<FileUploadConfiguration> bootstrap) {
+    	bootstrap.addBundle(new MultiPartBundle());
     	bootstrap.addBundle(new ViewBundle<FileUploadConfiguration>() {
             @Override
             public Map<String, Map<String, String>> getViewConfiguration(FileUploadConfiguration configuration) {
@@ -41,7 +43,7 @@ public class FileUploadApplication extends Application<FileUploadConfiguration> 
     @Override
     public void run(final FileUploadConfiguration configuration, final Environment environment) {
     	
-    	final FileResource fileResource = new FileResource(configuration.getBackupPath());
+    	final FileResource fileResource = new FileResource(configuration.getBackupPath(), configuration.getCipherPass());
     	environment.jersey().register(fileResource);
     	
     	final FileuploadHealthCheck healthCheck = new FileuploadHealthCheck(configuration.getBackupPath());

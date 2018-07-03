@@ -13,6 +13,9 @@ public class FileUploadConfiguration extends Configuration {
 	
 	@NotEmpty
     private String backupPath;
+	
+	@NotEmpty
+	private String cipherPass;
     
     @NotNull
     private Map<String, Map<String, String>> viewRendererConfiguration = Collections.emptyMap();
@@ -35,5 +38,15 @@ public class FileUploadConfiguration extends Configuration {
     @JsonProperty("backupPath")
 	public void setBackupPath(String backupPath) {
 		this.backupPath = backupPath;
+	}
+
+    @JsonProperty("cipherPass")
+	public String getCipherPass() {
+		return cipherPass;
+	}
+
+    @JsonProperty("cipherPass")
+	public void setCipherPass(String cipherPass) {
+		this.cipherPass = cipherPass;
 	}
 }

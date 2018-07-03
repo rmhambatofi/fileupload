@@ -1,0 +1,8 @@
+<script>
+	$(document).ready(function() {
+		$('#InputFile').on('change',function(){
+		  	var fileName = $(this).val();
+		  	$(this).next('#InputFileLabel').addClass("selected").html(fileName);
+		});
+	});
+</script>

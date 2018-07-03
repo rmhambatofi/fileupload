@@ -1,4 +1,7 @@
-backupPath: /Users/manitra/backup
+#backupPath: /Users/manitra/backup
+backupPath: C:/Tools/backup
+
+cipherPass: abcDEfGh
 
 # Logging settings.
 logging:
