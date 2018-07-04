@@ -1,12 +1,12 @@
 package fr.manitra.fileupload.resources;
 
-import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.FileSystems;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -15,11 +15,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.media.multipart.BodyPartEntity;
@@ -30,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import fr.manitra.fileupload.core.FileInfo;
-import fr.manitra.fileupload.crypto.CipherMode;
 import fr.manitra.fileupload.crypto.CryptoHandler;
 import fr.manitra.fileupload.exception.FileUploadException;
 import fr.manitra.fileupload.views.FilesView;
@@ -74,6 +75,44 @@ public class FileResource {
 		
 		return new FilesView(Template.FREEMARKER, getFiles());
 	}
+	
+	@POST
+	@Path("/download")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces(MediaType.APPLICATION_OCTET_STREAM)
+	public Response download(@FormParam("FileNameTxt") String fileName) throws Exception {
+		 CryptoHandler cryptoHandler = new CryptoHandler();
+		 StringBuilder filePath = new StringBuilder(backupPath).append("/").append(fileName);
+		 
+		 ByteArrayOutputStream outputStream = cryptoHandler.decryptFile(cipherPass, filePath.toString());
+		 FileOutput output = new FileOutput(outputStream.toByteArray());
+		 
+	     return Response
+	            .ok(output, MediaType.APPLICATION_OCTET_STREAM)
+	            .header("content-disposition","attachment; filename = " + fileName)
+	            .build();
+	 }
+	
+	@POST
+	@Path("/remove")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces(MediaType.TEXT_HTML)
+	public FilesView remove(@FormParam("FileNameTxt") String fileName) throws Exception {
+		removeFile(fileName);
+		return new FilesView(Template.FREEMARKER, getFiles());
+	}
+	
+	@POST
+	@Path("/removeSelected")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	@Produces(MediaType.TEXT_HTML)
+	public FilesView removeSelected(@FormParam("SelectedNames") List<String> fileNames) {
+		if (fileNames == null || fileNames.isEmpty()) {
+			return new FilesView(Template.FREEMARKER, getFiles());
+		}
+		fileNames.forEach(this::removeFile);
+		return new FilesView(Template.FREEMARKER, getFiles());
+	}
 
 	private List<FileInfo> getFiles() {
 		File backupDir = new File(backupPath);
@@ -113,16 +152,10 @@ public class FileResource {
 	}
 	
 	private void saveFile(InputStream inputStream, String fileName, String password) throws Exception {
-		
-		StringBuilder pathName = new StringBuilder(this.backupPath).append("/").append(fileName);
-		java.nio.file.Path path = FileSystems.getDefault().getPath(pathName.toString());
-		
 		CryptoHandler cryptoHandler = new CryptoHandler();
-		byte[] encrypted = cryptoHandler.processFile(CipherMode.ENCRYPT, password, inputStream);
-		inputStream.close();
-		
-		ByteArrayInputStream in = new ByteArrayInputStream(encrypted);
-		Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
+		StringBuilder filePath = new StringBuilder(backupPath).append("/").append(fileName);
+		FileOutputStream out = new FileOutputStream(filePath.toString());
+		cryptoHandler.encryptFile(password, inputStream, fileName, out);
 	}
 	
 	private void processBackup(String password, FormDataBodyPart bodyPart) {
@@ -132,6 +165,16 @@ public class FileResource {
 			saveFile(bodyPartEntity.getInputStream(), fileName, password);
 			LOGGER.info("[{}] saved at [{}]", fileName, this.backupPath);
 		} catch (Exception e) {
+			throw new FileUploadException(e.getMessage(), e);
+		}
+	}
+	
+	private void removeFile(String fileName) {
+		try {
+			LOGGER.info("Removing file [{}] ...", fileName);
+			Files.delete(Paths.get(backupPath, "/", fileName));
+			LOGGER.info("[{}] removed!", fileName);
+		} catch (IOException e) {
 			throw new FileUploadException(e.getMessage(), e);
 		}
 	}

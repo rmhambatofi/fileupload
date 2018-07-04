@@ -1,72 +1,65 @@
 package fr.manitra.fileupload.crypto;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.security.SecureRandom;
-import java.security.spec.KeySpec;
+import java.io.OutputStream;
+import java.security.Key;
 
 import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class CryptoHandler {
+
+	private static final Logger LOGGER = LoggerFactory.getLogger(CryptoHandler.class);
 	
-	public byte[] processFile(CipherMode cipherMode, String pass, InputStream inputStream) throws Exception {
+	public void encryptFile(String pass, InputStream inputStream, String fileName, OutputStream output) throws Exception {
+		LOGGER.info("Encrypting file: [{}] ... ", fileName);
+		Key secretKey = new SecretKeySpec(pass.getBytes(), "AES");
+		Cipher cipher = Cipher.getInstance("AES");
+		cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 		
-		// Generating the AES Key
-		byte[] salt = new byte[8];
-		SecureRandom srandom = new SecureRandom(salt);
-		srandom.nextBytes(salt);
-		SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-		KeySpec spec = new PBEKeySpec(pass.toCharArray(), salt, 10000, 128);
-		SecretKey tmp = factory.generateSecret(spec);
-		SecretKeySpec skey = new SecretKeySpec(tmp.getEncoded(), "AES");
+	    CipherOutputStream encryptedOutput = new CipherOutputStream(output, cipher);
+		copy(inputStream, encryptedOutput);
 		
-		// Generate the Initialization Vector 
-		byte[] iv = new byte[128/8];
-		srandom.nextBytes(iv);
-		IvParameterSpec ivspec = new IvParameterSpec(iv);
+		encryptedOutput.close();
+		inputStream.close();
+		output.close();
 		
-		// Processing the File
-		Cipher ci = Cipher.getInstance("AES/CBC/PKCS5Padding");
-		ci.init(cipherMode.getMode(), skey, ivspec);
+		LOGGER.info("[{}] encrypted! ", fileName);
+	}
+	
+	public ByteArrayOutputStream decryptFile(String pass, String fileName) throws Exception {
+		LOGGER.info("Decrypting file: [{}] ... ", fileName);
+		FileInputStream input = new FileInputStream(fileName);
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
 		
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		Key secretKey = new SecretKeySpec(pass.getBytes(), "AES");
+		Cipher cipher = Cipher.getInstance("AES");
+		cipher.init(Cipher.DECRYPT_MODE, secretKey);
+
+		CipherInputStream is = new CipherInputStream(input, cipher);
+		copy(is, output);
 		
-		byte[] ibuf = new byte[1024];
-	    int len;
-	    while ((len = inputStream.read(ibuf)) != -1) {
-	        byte[] obuf = ci.update(ibuf, 0, len);
-	        if ( obuf != null ) {
-	        	out.write(obuf);
-	        }
-	    }
-	    byte[] obuf = ci.doFinal();
-	    if ( obuf != null ) {
-	    	out.write(obuf);
-	    }
+		is.close();
+		input.close();
 		
-	    return obuf;
+		LOGGER.info("[{}] decrypted", fileName);
 		
-//       Key secretKey = new SecretKeySpec(pass.getBytes(), "AES");
-//       Cipher cipher = Cipher.getInstance("AES");
-//       cipher.init(cipherMode.getMode(), secretKey);
-//
-//       ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-//       int nRead;
-//       byte[] data = new byte[1024];
-//       while ((nRead = inputStream.read(data, 0, data.length)) != -1) {
-//           buffer.write(data, 0, nRead);
-//       }
-//       buffer.flush();
-//       
-//       byte[] inputBytes = buffer.toByteArray();
-//       byte[] outputBytes = cipher.doFinal(inputBytes);
-//     
-//       inputStream.close();
-//       return outputBytes;
+		return output;
+	}
+
+	private void copy(InputStream is, OutputStream os) throws IOException {
+		int i;
+		byte[] b = new byte[1024];
+		while((i=is.read(b))!=-1) {
+			os.write(b, 0, i);
+		}
 	}
 }

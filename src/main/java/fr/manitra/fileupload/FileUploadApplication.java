@@ -2,14 +2,14 @@ package fr.manitra.fileupload;
 
 import java.util.Map;
 
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.spi.ExtendedExceptionMapper;
 
-import com.github.mustachejava.MustacheNotFoundException;
 import com.google.common.base.Throwables;
 
+import fr.manitra.fileupload.exception.FileUploadException;
 import fr.manitra.fileupload.health.FileuploadHealthCheck;
 import fr.manitra.fileupload.resources.FileResource;
 import io.dropwizard.Application;
@@ -49,15 +49,18 @@ public class FileUploadApplication extends Application<FileUploadConfiguration> 
     	final FileuploadHealthCheck healthCheck = new FileuploadHealthCheck(configuration.getBackupPath());
     	environment.healthChecks().register("template", healthCheck);
     	
-    	environment.jersey().register(new ExtendedExceptionMapper<WebApplicationException>() {
+    	
+    	environment.jersey().register(new ExtendedExceptionMapper<FileUploadException>() {
     	    @Override
-    	    public Response toResponse(WebApplicationException exception) {
-    	        return Response.status(Response.Status.NOT_FOUND).build();
+    	    public Response toResponse(FileUploadException exception) {
+    	        return Response
+    	        		.ok(exception.getMessage(), MediaType.TEXT_HTML)
+    	        		.status(Response.Status.ACCEPTED).build();
     	    }
 
     	    @Override
-    	    public boolean isMappable(WebApplicationException e) {
-    	        return Throwables.getRootCause(e).getClass() == MustacheNotFoundException.class;
+    	    public boolean isMappable(FileUploadException e) {
+    	        return Throwables.getRootCause(e).getClass() == FileUploadException.class;
     	    }
     	});
     }
