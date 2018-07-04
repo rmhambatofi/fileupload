@@ -1,0 +1,59 @@
+<script>
+
+	var validateFile = function() {
+		var fileElt = document.getElementById('InputFile');
+		if (fileElt.value === null || fileElt.value === "") {
+			alert("Please choose one or more files!");
+			return false;
+		} else {
+			document.getElementById('UploadForm').submit();
+		}
+	}
+
+	var downloadFile = function(fileName) {
+		document.getElementById('fileListForm').action = "/files/download";
+		document.getElementById('FileNameTxt').value = fileName;
+		document.getElementById('fileListForm').submit();
+		return false;
+	};
+	
+	var removeFile = function(fileName) {
+		if (confirm('Remove this file ?')) {
+			document.getElementById('fileListForm').action = "/files/remove";
+			document.getElementById('FileNameTxt').value = fileName;
+			document.getElementById('fileListForm').submit();
+		}
+		
+		return false;
+	};
+	
+	var checkSelectedName = function(element, fileName) {
+		if (element.checked) {
+			element.value = fileName;
+		} else {
+			element.value = null;
+		}
+	};
+	
+	var removeSelected = function() {
+		var checkboxes = document.querySelectorAll("input[type='checkbox']");
+		var nothingSelected = true;
+		for(var i = 0; i < checkboxes.length; i++) {
+			if (checkboxes[i].checked) {
+				nothingSelected = false;
+			}  
+		}
+		
+		if (nothingSelected) {
+			alert("Please selected one or more files!");
+			return false;
+		}
+		
+		if (confirm('Remove selected file(s) ?')) {
+			document.getElementById('fileListForm').action = "/files/removeSelected";
+			document.getElementById('fileListForm').submit();
+		}
+		return false;
+	};
+		
+</script>
