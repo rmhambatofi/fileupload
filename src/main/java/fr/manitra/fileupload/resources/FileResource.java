@@ -65,6 +65,10 @@ public class FileResource {
 	public FilesView upload(@FormDataParam("files") List<FormDataBodyPart> bodyParts, 
 			@FormDataParam("files") FormDataContentDisposition fileDispositions) {
 		
+		if (bodyParts == null || bodyParts.isEmpty()) { 
+			throw new FileUploadException("Please choose one or more files!"); 
+		} 
+
 		if (StringUtils.isBlank(cipherPass)) {
 			throw new FileUploadException("Password cannot be null!");
 		}

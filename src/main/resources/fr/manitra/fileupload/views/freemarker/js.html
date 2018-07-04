@@ -1,4 +1,15 @@
 <script>
+
+	var validateFile = function() {
+		var fileElt = document.getElementById('InputFile');
+		if (fileElt.value === null || fileElt.value === "") {
+			alert("Please choose one or more files!");
+			return false;
+		} else {
+			document.getElementById('UploadForm').submit();
+		}
+	}
+
 	var downloadFile = function(fileName) {
 		document.getElementById('fileListForm').action = "/files/download";
 		document.getElementById('FileNameTxt').value = fileName;
